@@ -1,2 +1,5 @@
-./venv/
-./.idea/
+#Enviroment
+venv/
+
+#JetBrains Configurations
+.idea/
