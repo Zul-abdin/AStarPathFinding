@@ -6,7 +6,7 @@ import sys
 import shutil
 import multiprocessing
 import glob
-import IPython
+
 
 
 def backTrackerMaze(number, width=101, height=101):
@@ -118,9 +118,9 @@ if __name__ == "__main__":
     
 
     multiprocessing.freeze_support()
-    num_proc = multiprocessing.cpu_count()
+    # num_proc = multiprocessing.cpu_count()
     ## for python 3.6 uncomment the line below, and comment the line above
-    # num_proc = os.cpu_count()
+    num_proc = os.cpu_count()
     pool = multiprocessing.Pool(processes = num_proc)
 
     nn = [i for i in range(n_grids)]

@@ -25,34 +25,35 @@ class BinaryHeap:
         return self.heap[i]
 
     # returns the root node
-    def get_max(self):
+    def get_min(self):
         if self.size() == 0:
             return None
         return self.heap[0]
 
     # pops out the root node, then calls max_heapify to arrange nods again
-    def extract_max(self):
+    def extract_min(self):
         if self.size() == 0:
             return None
-        largest = self.get_max()
+        smallest = self.get_min()
         self.heap[0] = self.heap[-1]
         del self.heap[-1]
-        self.max_heapify(0)
-        return largest
+        self.min_heapify(0)
+        return smallest
 
     # after extracting root node, it arranges the remaining nodes
-    def max_heapify(self, i):
+    def min_heapify(self, i):
         left_node = self.left_child(i)
         right_node = self.right_child(i)
-        if left_node <= self.size() - 1 and self.get(left_node) > self.get(i):
-            largest = left_node
+        smallest = i
+        if left_node <= self.size() - 1 and self.get(left_node) < self.get(i):
+            smallest = left_node
         else:
             largest = i
-        if right_node <= self.size() - 1 and self.get(right_node) > self.get(largest):
-            largest = right_node
-        if largest != i:
-            self.swap(largest, i)
-            self.max_heapify(largest)
+        if right_node <= self.size() - 1 and self.get(right_node) < self.get(smallest):
+            smallest = right_node
+        if smallest != i:
+            self.swap(smallest, i)
+            self.min_heapify(smallest)
 
     # pretty straightforward
     def swap(self, i, j):
@@ -65,7 +66,7 @@ class BinaryHeap:
 
         while (index != 0):
             p = self.parent(index)
-            if self.get(p) < self.get(index):
+            if self.get(p) > self.get(index):
                 self.swap(p, index)
             index = p
     # prints the whole list but in binary heap way instead of straight list order.
