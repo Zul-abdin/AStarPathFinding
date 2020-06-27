@@ -1,9 +1,9 @@
-
-def heuristic(start_row, start_col, goal_row, goal_col, grid):
-    x = abs(start_row - goal_row)
-    y = abs(start_col - goal_col)
-    print(x + y)
-
+from Cell import Cell
+def get_heuristic(cell,goal_cell):
+    x_final = abs(cell.x - goal_cell.x)
+    y_final = abs(cell.y - goal_cell.y)
+    dist = x_final + y_final
+    return dist
 
 def f_function():
     print('')
