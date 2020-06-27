@@ -1,5 +1,6 @@
 # Project 1
 import random
+import astar
 
 print('Test4')
 
@@ -19,12 +20,13 @@ def point_picker(arr):
     goal_row = random.randint(0, len(arr))
     goal_col = random.randint(0, len(arr[0]))
 
-    print(arr[start_row][start_col])
+    print(arr[start_row][start_col], arr[goal_row][goal_col])
     if arr[start_row][start_col] and arr[goal_row][goal_col] == '1':
         point_picker(arr)
 
     print(start_row, start_col)
     print(goal_row, goal_col)
+    astar.heuristic(start_row, start_col, goal_row, goal_col, arr)
 
 
 if __name__ == "__main__":
