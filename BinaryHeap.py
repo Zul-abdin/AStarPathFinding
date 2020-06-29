@@ -22,7 +22,7 @@ class BinaryHeap:
         return 2 * i + 2
 
     def get(self, i):
-        return self.heap[i]
+        return self.heap[i].f
 
     # returns the root node
     def get_min(self):
