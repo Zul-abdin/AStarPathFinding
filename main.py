@@ -9,13 +9,12 @@ import sys
 import shutil
 
 # reads maze files and converts them to a 2d array
-def create_grid():
-    directory = 'arrs/randGrid'
-    for filename in os.listdir(directory):
-        if filename.endswith(".txt"):
-            file = open("arrs/randGrid/" + filename)
-            lines = [line.split() for line in file]
-            return lines
+def create_grid(filename):
+        # for filename in os.listdir(directory):
+        # if filename.endswith(".txt"):
+    file = open("arrs/randGrid/" + filename)
+    lines = [line.split() for line in file]
+    return lines
 
 
 # picks the starting node, recursively calls until it finds an unblocked cell
@@ -112,17 +111,7 @@ def draw_path(maze):
     plt.savefig("pics/randGrid/path0")
     plt.show()
 
-
-if __name__ == "__main__":
-    maze = create_grid()
-    directory = 'arrs/randGrid'
-    for filename in os.listdir(directory):
-        if filename.endswith(".txt"):
-            file = open("arrs/randGrid/" + filename)
-            lines = [line.split() for line in file]
-            maze = lines
-
-
+def solver(maze):
     agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     points = point_picker(maze)
     solution = repeated_forward(points[0], points[1])
@@ -132,3 +121,21 @@ if __name__ == "__main__":
             maze[cell.x][cell.y] = '3'
             print("(" + str(cell.x) + ", " + str(cell.y) + ")")
         draw_path(maze)
+
+if __name__ == "__main__":
+
+    directory = 'arrs/randGrid'
+    for filename in os.listdir(directory):
+        if filename.endswith(".txt"):
+
+            maze = create_grid(filename)
+            agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
+            print(filename)
+            points = point_picker(maze)
+            solution = repeated_forward(points[0], points[1])
+            if solution != -1:
+                print("Path Cost = " + str(len(solution) - 1))
+                for cell in solution:
+                    maze[cell.x][cell.y] = '3'
+                    print("(" + str(cell.x) + ", " + str(cell.y) + ")")
+                draw_path(maze)

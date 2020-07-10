@@ -79,7 +79,6 @@ class BinaryHeap:
             if self.get(p) != self.get(index):
 
                 if self.get(p) > self.get(index):
-                    print("check 1")
                     self.swap(p, index)
                 index = p
             # if the f values are equal,
@@ -88,7 +87,6 @@ class BinaryHeap:
                 if self.get_h(p) != self.get_h(index):
                     # swap based on h values
                     if self.get_h(p) > self.get_h(index):
-                        print("check 2")
                         self.swap(p, index)
                     index = p
                 # if the h values are equal,
@@ -97,13 +95,11 @@ class BinaryHeap:
                     if self.get_x(p) != self.get_x(index):
                         # swap based on x values
                         if self.get_x(p) > self.get_x(index):
-                            print("check 3")
                             self.swap(p, index)
                         index = p
                         # if all f,x,h values are equal then first come first serve basis on f value
                     elif self.get_x(p) == self.get_x(index):
                         if self.get(p) > self.get(index):
-                            print("check 4")
                             self.swap(p, index)
                         index = p
 
