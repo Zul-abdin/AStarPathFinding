@@ -8,20 +8,19 @@ from BinaryHeap import BinaryHeap
 import os
 import matplotlib.pyplot as plt
 import time
+
 print('Test4')
+
 
 # reads maze files and converts them to a 2d array
 def create_grid(filename):
-    # for filename in os.listdir(directory):
-    # if filename.endswith(".txt"):
     file = open("arrs/randGrid/" + filename)
     lines = [line.split() for line in file]
     return lines
 
 
-# picks the starting node, recursively calls until it finds an unblocked cell
+# picks the starting node until it finds goal and start are unblocked cells
 def point_picker(arr):
-
     while True:
 
         start_row = random.randint(0, len(arr) - 1)
@@ -30,16 +29,16 @@ def point_picker(arr):
         goal_row = random.randint(0, len(arr) - 1)
         goal_col = random.randint(0, len(arr[0]) - 1)
 
-        if not(int(arr[start_row][start_col]) or int(arr[goal_row][goal_col])):
+        if not (int(arr[start_row][start_col]) or int(arr[goal_row][goal_col])):
             break
 
     print(start_row, start_col)
     print(goal_row, goal_col)
 
     # initial heuristic
-    goal_cell = Cell(goal_row, goal_col,0)
-    start_cell = Cell(start_row, start_col,0)
-    #print("Heuristic: " + str(astar.get_heuristic(start_cell, goal_cell)))
+    goal_cell = Cell(goal_row, goal_col, 0)
+    start_cell = Cell(start_row, start_col, 0)
+    # print("Heuristic: " + str(astar.get_heuristic(start_cell, goal_cell)))
     return [start_cell, goal_cell]
 
 
@@ -59,6 +58,7 @@ def update_agent_vision(node):
         if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]):
             agent_vision[child.x][child.y] = maze[child.x][child.y]
 
+
 def compute_path(min_heap, start_cell, goal_cell, mode):
     expandedList = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     if mode == "forward":
@@ -77,9 +77,11 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
         while expandedList[currNode.x][currNode.y] == 1 and min_heap.get_min() is not None:
             currNode = min_heap.extract_min()
 
-        children = [Cell(currNode.x - 1, currNode.y, 0), Cell(currNode.x, currNode.y + 1, 0), Cell(currNode.x + 1, currNode.y, 0), Cell(currNode.x, currNode.y - 1, 0)]
+        children = [Cell(currNode.x - 1, currNode.y, 0), Cell(currNode.x, currNode.y + 1, 0),
+                    Cell(currNode.x + 1, currNode.y, 0), Cell(currNode.x, currNode.y - 1, 0)]
         for child in children:
-            if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]) and expandedList[child.x][child.y] == 0 and int(agent_vision[child.x][child.y]) != 1:
+            if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]) and expandedList[child.x][child.y] == 0 and int(
+                    agent_vision[child.x][child.y]) != 1:
                 child.parent = currNode
                 if mode == "forward":
                     child.h = astar.get_heuristic(child, goal_cell)
@@ -92,7 +94,7 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
         expandedList[currNode.x][currNode.y] = 1
         if currNode.x == goal_cell.x and currNode.y == goal_cell.y:
             return backtrace(currNode)
-    #print("Unreachable Goal")
+    # print("Unreachable Goal")
     return -1
 
 
@@ -207,6 +209,8 @@ def repeated_backward_lazy(start_cell, goal_cell):
             return -1
     return solution
 
+
+# draws path and saves to folder in directory, need to have results folder in project folder prior.
 def draw_path(maze, x):
     int_maze = [list(map(int, i)) for i in maze]
     plt.figure()
@@ -215,15 +219,17 @@ def draw_path(maze, x):
     plt.yticks([])
     plt.savefig("results/maze{0:0=2d}.png".format(x))
     plt.close()
-    #plt.show()
+    # plt.show()
+
 
 if __name__ == "__main__":
     start_time = time.time()
-    #maze = create_grid()
-    #agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
-    #points = point_picker(maze)
-    #points = [Cell(4, 74, 0), Cell(42, 15, 0)]
-    #solution = repeated_forward_lazy(points[0], points[1])
+    # maze = create_grid()
+    # agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
+    # points = point_picker(maze)
+    # points = [Cell(4, 74, 0), Cell(42, 15, 0)]
+    # solution = repeated_forward_lazy(points[0], points[1])
+    search_type = sys.argv[1]
     directory = 'arrs/randGrid'
     x = 0
     for filename in os.listdir(directory):
@@ -232,15 +238,20 @@ if __name__ == "__main__":
             agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
             print(filename)
             points = point_picker(maze)
-            solution = repeated_adaptive(points[0], points[1])
+
+            # checks for which search type
+            if search_type == 'b':
+                solution = repeated_backward_optimized(points[0], points[1])
+            elif search_type == 'f':
+                solution = repeated_forward_optimized(points[0], points[1])
+            elif search_type == 'a':
+                solution = repeated_adaptive(points[0], points[1])
             if solution != -1:
-                #print("Path Cost = " + str(len(solution) - 1))
+                # print("Path Cost = " + str(len(solution) - 1))
                 for cell in solution:
                     maze[cell.x][cell.y] = '3'
-                    #print("(" + str(cell.x) + ", " + str(cell.y) + ")")
+                    # print("(" + str(cell.x) + ", " + str(cell.y) + ")")
                 draw_path(maze, x)
         x = x + 1
-        #time.sleep(0.8)
     end_time = time.time()
     print(end_time - start_time)
-
