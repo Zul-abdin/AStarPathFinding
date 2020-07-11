@@ -7,5 +7,5 @@ class Cell:
         self.y = y
         self.parent = None
         self.f = sys.maxsize
-        self.g = sys.maxsize
-        self.h = 0
+        self.g = 0
+        self.h = sys.maxsize
