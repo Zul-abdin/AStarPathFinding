@@ -1,5 +1,7 @@
 # Project 1
 import random
+import sys
+
 import astar
 from Cell import Cell
 from BinaryHeap import BinaryHeap
@@ -31,8 +33,8 @@ def point_picker(arr):
         if not(int(arr[start_row][start_col]) or int(arr[goal_row][goal_col])):
             break
 
-    #(start_row, start_col)
-    #print(goal_row, goal_col)
+    print(start_row, start_col)
+    print(goal_row, goal_col)
 
     # initial heuristic
     goal_cell = Cell(goal_row, goal_col,0)
@@ -95,8 +97,8 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
 def compute_path_adaptive(min_heap, start_cell, goal_cell, prev_expanded, prev_cost):
     expandedList = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     expanded = [[None for x in range(len(maze[0]))] for y in range(len(maze))]
-    if expanded[start_cell.x][start_cell.y] is not None :
-        start_cell.h = expanded[start_cell.h][start_cell.y]
+    if prev_expanded[start_cell.x][start_cell.y] is not None:
+        start_cell.h = prev_cost - prev_expanded[start_cell.x][start_cell.y]
     else:
         start_cell.h = astar.get_heuristic(start_cell, goal_cell)
     start_cell.g = 0
@@ -116,12 +118,12 @@ def compute_path_adaptive(min_heap, start_cell, goal_cell, prev_expanded, prev_c
                 child.parent = currNode
                 child.h = astar.get_heuristic(child, goal_cell)
                 if prev_expanded[child.x][child.y] is not None:
-                    child.h = prev_expanded[child.x][child.y]
+                    child.h = prev_cost - prev_expanded[child.x][child.y]
                 child.g = currNode.g + 1
                 child.f = child.h + child.g
                 min_heap.insert(child)
         expandedList[currNode.x][currNode.y] = 1
-        expanded[currNode.x][currNode.y] = currNode.h
+        expanded[currNode.x][currNode.y] = currNode.g
         if currNode.x == goal_cell.x and currNode.y == goal_cell.y:
             return backtrace(currNode), expanded
     # print("Unreachable Goal")
@@ -166,12 +168,11 @@ def repeated_backward_optimized(start_cell, goal_cell):
 
 def repeated_adaptive(start_cell, goal_cell):
     end_node = start_cell
-    prev_expanded = [[None for x in range(len(maze[0]))] for y in range(len(maze))]
-    path_cost = 0
+    expanded = [[None for x in range(len(maze[0]))] for y in range(len(maze))]
+    path_cost = sys.maxsize
     while end_node.x != goal_cell.x or end_node.y != goal_cell.y:
-        (path, expanded) = compute_path_adaptive(BinaryHeap(), end_node, goal_cell, prev_expanded, path_cost)
+        (path, expanded) = compute_path_adaptive(BinaryHeap(), end_node, goal_cell, expanded, path_cost)
         if path != -1:
-            prev_expanded = expanded
             path_cost = len(path) - 1
             for node in path:
                 if int(maze[node.x][node.y]) == 1:
@@ -227,7 +228,7 @@ if __name__ == "__main__":
         if filename.endswith(".txt"):
             maze = create_grid(filename)
             agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
-            #print(filename)
+            print(filename)
             points = point_picker(maze)
             solution = repeated_adaptive(points[0], points[1])
             if solution != -1:
