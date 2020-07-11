@@ -63,9 +63,11 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
     expandedList = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     if mode == "forward":
         start_cell.h = astar.get_heuristic(start_cell, goal_cell)
+        start_cell.g = 0
         start_cell.f = start_cell.h
     if mode == "backward":
         start_cell.g = astar.get_heuristic(start_cell, goal_cell)
+        start_cell.h = 0
         start_cell.f = start_cell.g
     min_heap.insert(start_cell)
     update_agent_vision(start_cell)
@@ -173,7 +175,7 @@ def repeated_adaptive(start_cell, goal_cell):
     while end_node.x != goal_cell.x or end_node.y != goal_cell.y:
         (path, expanded) = compute_path_adaptive(BinaryHeap(), end_node, goal_cell, expanded, path_cost)
         if path != -1:
-            path_cost = len(path) - 1
+            path_cost = path[-1].g
             for node in path:
                 if int(maze[node.x][node.y]) == 1:
                     break
