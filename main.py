@@ -41,12 +41,6 @@ def point_picker(arr):
     return [start_cell, goal_cell]
 
 
-def arr_contains_pair(expanded, cell):
-    for i in expanded:
-        if i.x == cell.x and i.y == cell.y:
-            return 1
-    return 0
-
 def backtrace(cell):
     solution = []
     parent = cell
@@ -64,34 +58,30 @@ def update_agent_vision(node):
             agent_vision[child.x][child.y] = maze[child.x][child.y]
 
 def compute_path(min_heap, start_cell, goal_cell, mode):
-    expanded = []
+    expandedList = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     start_cell.g = astar.get_heuristic(start_cell, goal_cell)
     start_cell.f = start_cell.g
     min_heap.insert(start_cell)
-    if mode == "forward":
-        children = [Cell(start_cell.x - 1, start_cell.y, 0), Cell(start_cell.x, start_cell.y + 1, 0),
-                    Cell(start_cell.x + 1, start_cell.y, 0), Cell(start_cell.x, start_cell.y - 1, 0)]
-    elif mode == "backward":
-        children = [Cell(goal_cell.x - 1, goal_cell.y, 0), Cell(goal_cell.x, goal_cell.y + 1, 0),
-                    Cell(goal_cell.x + 1, goal_cell.y, 0), Cell(goal_cell.x, goal_cell.y - 1, 0)]
-    else:
-        #print("Illegal Mode Argument in Compute_Path")
-        return -1
-    for child in children:
-        if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]):
-            agent_vision[child.x][child.y] = maze[child.x][child.y]
-
+    update_agent_vision(start_cell)
     while min_heap.get_min() is not None:
         currNode = min_heap.extract_min()
+
+        while expandedList[currNode.x][currNode.y] == 1 and min_heap.get_min() is not None:
+            currNode = min_heap.extract_min()
+
         children = [Cell(currNode.x - 1, currNode.y, 0), Cell(currNode.x, currNode.y + 1, 0), Cell(currNode.x + 1, currNode.y, 0), Cell(currNode.x, currNode.y - 1, 0)]
         for child in children:
-            if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]) and arr_contains_pair(expanded, child) == 0 and int(agent_vision[child.x][child.y]) != 1 and arr_contains_pair(min_heap.heap, child) == 0:
+            if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]) and expandedList[child.x][child.y] == 0 and int(agent_vision[child.x][child.y]) != 1:
                 child.parent = currNode
-                child.h = astar.get_heuristic(child, goal_cell)
-                child.g = currNode.g + 1
+                if(mode == "forward"):
+                    child.h = astar.get_heuristic(child, goal_cell)
+                    child.g = currNode.g + 1
+                if(mode == "backward"):
+                    child.g = astar.get_heuristic(child, goal_cell)
+                    child.h = currNode.g + 1
                 child.f = child.h + child.g
                 min_heap.insert(child)
-        expanded.append(currNode)
+        expandedList[currNode.x][currNode.y] = 1
         if currNode.x == goal_cell.x and currNode.y == goal_cell.y:
             return backtrace(currNode)
     #print("Unreachable Goal")
@@ -120,19 +110,18 @@ def repeated_forward_optimized(start_cell, goal_cell):
 
 
 def repeated_backward_optimized(start_cell, goal_cell):
-    solution = [start_cell]
-    while solution[-1].x != goal_cell.x or solution[-1].y != goal_cell.y:
-        path = compute_path(BinaryHeap(), goal_cell, solution[-1], "backward")
+    end_node = start_cell
+    while end_node.x != goal_cell.x or end_node.y != goal_cell.y:
+        path = compute_path(BinaryHeap(), end_node, goal_cell, "backward")
         if path != -1:
-            for node in reversed(path):
+            for node in path:
                 if int(maze[node.x][node.y]) == 1:
                     break
-                if node.x != solution[-1].x or node.y != solution[-1].y:
-                    solution.append(Cell(node.x, node.y, 0))
-                    update_agent_vision(node)
+                update_agent_vision(node)
+                end_node = node
         else:
             return -1
-    return solution
+    return backtrace(end_node)
 
 
 def repeated_forward_lazy(start_cell, goal_cell):
@@ -181,7 +170,7 @@ if __name__ == "__main__":
             agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
             #print(filename)
             points = point_picker(maze)
-            solution = repeated_forward_optimized(points[0], points[1])
+            solution = repeated_backward_lazy(points[0], points[1])
             if solution != -1:
                 #print("Path Cost = " + str(len(solution) - 1))
                 for cell in solution:
