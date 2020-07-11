@@ -31,13 +31,13 @@ def point_picker(arr):
         if not(int(arr[start_row][start_col]) or int(arr[goal_row][goal_col])):
             break
 
-    print(start_row, start_col)
-    print(goal_row, goal_col)
+    #(start_row, start_col)
+    #print(goal_row, goal_col)
 
     # initial heuristic
     goal_cell = Cell(goal_row, goal_col,0)
     start_cell = Cell(start_row, start_col,0)
-    print("Heuristic: " + str(astar.get_heuristic(start_cell, goal_cell)))
+    #print("Heuristic: " + str(astar.get_heuristic(start_cell, goal_cell)))
     return [start_cell, goal_cell]
 
 
@@ -75,7 +75,7 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
         children = [Cell(goal_cell.x - 1, goal_cell.y, 0), Cell(goal_cell.x, goal_cell.y + 1, 0),
                     Cell(goal_cell.x + 1, goal_cell.y, 0), Cell(goal_cell.x, goal_cell.y - 1, 0)]
     else:
-        print("Illegal Mode Argument in Compute_Path")
+        #print("Illegal Mode Argument in Compute_Path")
         return -1
     for child in children:
         if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]):
@@ -85,7 +85,7 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
         currNode = min_heap.extract_min()
         children = [Cell(currNode.x - 1, currNode.y, 0), Cell(currNode.x, currNode.y + 1, 0), Cell(currNode.x + 1, currNode.y, 0), Cell(currNode.x, currNode.y - 1, 0)]
         for child in children:
-            if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]) and arr_contains_pair(expanded, child) == 0 and int(agent_vision[child.x][child.y]) != 1:
+            if 0 <= child.x < len(maze) and 0 <= child.y < len(maze[0]) and arr_contains_pair(expanded, child) == 0 and int(agent_vision[child.x][child.y]) != 1 and arr_contains_pair(min_heap.heap, child) == 0:
                 child.parent = currNode
                 child.h = astar.get_heuristic(child, goal_cell)
                 child.g = currNode.g + 1
@@ -94,7 +94,7 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
         expanded.append(currNode)
         if currNode.x == goal_cell.x and currNode.y == goal_cell.y:
             return backtrace(currNode)
-    print("Unreachable Goal")
+    #print("Unreachable Goal")
     return -1
 
 
@@ -162,10 +162,12 @@ def draw_path(maze, x):
     plt.imshow(int_maze, cmap=plt.cm.binary, interpolation='nearest')
     plt.xticks([])  # remove the tick marks by setting to an empty list
     plt.yticks([])
-    plt.savefig("pics/results/maze{0:0=2d}.png".format(x))
+    plt.savefig("results/maze{0:0=2d}.png".format(x))
+    plt.close()
     #plt.show()
 
 if __name__ == "__main__":
+    start_time = time.time()
     #maze = create_grid()
     #agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     #points = point_picker(maze)
@@ -177,14 +179,17 @@ if __name__ == "__main__":
         if filename.endswith(".txt"):
             maze = create_grid(filename)
             agent_vision = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
-            print(filename)
+            #print(filename)
             points = point_picker(maze)
             solution = repeated_forward_optimized(points[0], points[1])
             if solution != -1:
-                print("Path Cost = " + str(len(solution) - 1))
+                #print("Path Cost = " + str(len(solution) - 1))
                 for cell in solution:
                     maze[cell.x][cell.y] = '3'
-                    print("(" + str(cell.x) + ", " + str(cell.y) + ")")
+                    #print("(" + str(cell.x) + ", " + str(cell.y) + ")")
                 draw_path(maze, x)
         x = x + 1
-        time.sleep(0.8)
+        #time.sleep(0.8)
+    end_time = time.time()
+    print(end_time - start_time)
+
