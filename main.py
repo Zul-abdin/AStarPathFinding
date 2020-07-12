@@ -60,6 +60,7 @@ def update_agent_vision(node):
 
 
 def compute_path(min_heap, start_cell, goal_cell, mode):
+    numExpanded = 0
     expandedList = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     if mode == "forward":
         start_cell.h = astar.get_heuristic(start_cell, goal_cell)
@@ -92,13 +93,15 @@ def compute_path(min_heap, start_cell, goal_cell, mode):
                 child.f = child.h + child.g
                 min_heap.insert(child)
         expandedList[currNode.x][currNode.y] = 1
+        numExpanded = numExpanded + 1
         if currNode.x == goal_cell.x and currNode.y == goal_cell.y:
-            return backtrace(currNode)
+            return backtrace(currNode), numExpanded
     # print("Unreachable Goal")
-    return -1
+    return -1, numExpanded
 
 
 def compute_path_adaptive(min_heap, start_cell, goal_cell, prev_expanded, prev_cost):
+    numExpanded = 0
     expandedList = [[0 for x in range(len(maze[0]))] for y in range(len(maze))]
     expanded = [[None for x in range(len(maze[0]))] for y in range(len(maze))]
     if prev_expanded[start_cell.x][start_cell.y] is not None:
@@ -128,10 +131,11 @@ def compute_path_adaptive(min_heap, start_cell, goal_cell, prev_expanded, prev_c
                 min_heap.insert(child)
         expandedList[currNode.x][currNode.y] = 1
         expanded[currNode.x][currNode.y] = currNode.g
+        numExpanded = numExpanded + 1
         if currNode.x == goal_cell.x and currNode.y == goal_cell.y:
-            return backtrace(currNode), expanded
+            return backtrace(currNode), expanded, numExpanded
     # print("Unreachable Goal")
-    return -1, -1
+    return -1, -1, numExpanded
 
 
 """
@@ -142,8 +146,10 @@ Lazy Methods for repeated A* re-calculate A* after every singular movement of th
 
 def repeated_forward_optimized(start_cell, goal_cell):
     end_node = start_cell
+    numExpanded = 0
     while end_node.x != goal_cell.x or end_node.y != goal_cell.y:
-        path = compute_path(BinaryHeap(), end_node, goal_cell, "forward")
+        path, numExpandedTemp = compute_path(BinaryHeap(), end_node, goal_cell, "forward")
+        numExpanded = numExpanded + numExpandedTemp
         if path != -1:
             for node in path:
                 if int(maze[node.x][node.y]) == 1:
@@ -151,14 +157,16 @@ def repeated_forward_optimized(start_cell, goal_cell):
                 update_agent_vision(node)
                 end_node = node
         else:
-            return -1
-    return backtrace(end_node)
+            return -1, numExpanded
+    return backtrace(end_node), numExpanded
 
 
 def repeated_backward_optimized(start_cell, goal_cell):
     end_node = start_cell
+    numExpanded = 0
     while end_node.x != goal_cell.x or end_node.y != goal_cell.y:
-        path = compute_path(BinaryHeap(), end_node, goal_cell, "backward")
+        path, numExpandedTemp = compute_path(BinaryHeap(), end_node, goal_cell, "backward")
+        numExpanded = numExpanded + numExpandedTemp
         if path != -1:
             for node in path:
                 if int(maze[node.x][node.y]) == 1:
@@ -166,16 +174,18 @@ def repeated_backward_optimized(start_cell, goal_cell):
                 update_agent_vision(node)
                 end_node = node
         else:
-            return -1
-    return backtrace(end_node)
+            return -1, numExpanded
+    return backtrace(end_node), numExpanded
 
 
 def repeated_adaptive(start_cell, goal_cell):
     end_node = start_cell
     expanded = [[None for x in range(len(maze[0]))] for y in range(len(maze))]
     path_cost = sys.maxsize
+    numExpanded = 0
     while end_node.x != goal_cell.x or end_node.y != goal_cell.y:
-        (path, expanded) = compute_path_adaptive(BinaryHeap(), end_node, goal_cell, expanded, path_cost)
+        (path, expanded, numExpandedTemp) = compute_path_adaptive(BinaryHeap(), end_node, goal_cell, expanded, path_cost)
+        numExpanded = numExpanded + numExpandedTemp
         if path != -1:
             path_cost = path[-1].g
             for node in path:
@@ -184,8 +194,8 @@ def repeated_adaptive(start_cell, goal_cell):
                 update_agent_vision(node)
                 end_node = node
         else:
-            return -1
-    return backtrace(end_node)
+            return -1, numExpanded
+    return backtrace(end_node), numExpanded
 
 
 def repeated_forward_lazy(start_cell, goal_cell):
@@ -232,6 +242,7 @@ if __name__ == "__main__":
     search_type = sys.argv[1]
     directory = 'arrs/randGrid'
     x = 0
+    totalExpanded = 0
     for filename in os.listdir(directory):
         if filename.endswith(".txt"):
             maze = create_grid(filename)
@@ -241,11 +252,12 @@ if __name__ == "__main__":
 
             # checks for which search type
             if search_type == 'b':
-                solution = repeated_backward_optimized(points[0], points[1])
+                solution, numExpanded = repeated_backward_optimized(points[0], points[1])
             elif search_type == 'f':
-                solution = repeated_forward_optimized(points[0], points[1])
+                solution, numExpanded = repeated_forward_optimized(points[0], points[1])
             elif search_type == 'a':
-                solution = repeated_adaptive(points[0], points[1])
+                solution, numExpanded = repeated_adaptive(points[0], points[1])
+            totalExpanded = totalExpanded + numExpanded
             if solution != -1:
                 # print("Path Cost = " + str(len(solution) - 1))
                 for cell in solution:
@@ -254,4 +266,5 @@ if __name__ == "__main__":
                 draw_path(maze, x)
         x = x + 1
     end_time = time.time()
-    print(end_time - start_time)
+    print("Total Cells Expanded: " + str(numExpanded))
+    print("Runtime: " + str(end_time - start_time))
