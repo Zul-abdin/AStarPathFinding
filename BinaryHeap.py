@@ -25,8 +25,8 @@ class BinaryHeap:
     def get(self, i):
         return self.heap[i].f
 
-    def get_x(self, i):
-        return self.heap[i].x
+    def get_g(self, i):
+        return self.heap[i].g
 
     def get_h(self, i):
         return self.heap[i].h
@@ -92,13 +92,13 @@ class BinaryHeap:
                 # if the h values are equal,
                 elif self.get_h(p) == self.get_h(index):
                     # check if the x values are not equal
-                    if self.get_x(p) != self.get_x(index):
+                    if self.get_g(p) != self.get_g(index):
                         # swap based on x values
-                        if self.get_x(p) > self.get_x(index):
+                        if self.get_g(p) < self.get_g(index):
                             self.swap(p, index)
                         index = p
                         # if all f,x,h values are equal then first come first serve basis on f value
-                    elif self.get_x(p) == self.get_x(index):
+                    elif self.get_g(p) == self.get_g(index):
                         if self.get(p) > self.get(index):
                             self.swap(p, index)
                         index = p
